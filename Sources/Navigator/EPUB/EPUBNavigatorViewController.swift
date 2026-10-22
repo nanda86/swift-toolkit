@@ -554,6 +554,7 @@ open class EPUBNavigatorViewController: InputObservableViewController,
             preloadNextPositionCount: hasPositions ? config.preloadNextPositionCount : 0,
             isScrollEnabled: isPaginationViewScrollingEnabled
         )
+        view.animatesChapterTransitionsVertically = settings.scroll && !settings.verticalText
         view.delegate = self
         view.backgroundColor = .clear
         return view
@@ -922,6 +923,7 @@ open class EPUBNavigatorViewController: InputObservableViewController,
 
         view.backgroundColor = settings.effectiveBackgroundColor.uiColor
         paginationView?.isScrollEnabled = isPaginationViewScrollingEnabled
+        paginationView?.animatesChapterTransitionsVertically = settings.scroll && !settings.verticalText
     }
 
     // MARK: - EPUB-specific extensions

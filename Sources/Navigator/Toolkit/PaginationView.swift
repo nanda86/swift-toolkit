@@ -78,18 +78,9 @@ final class PaginationView: UIView, Loggable {
         loadedViews[currentIndex]
     }
 
-    /// Loaded page views in reading order.
-    private var orderedViews: [UIView & PageView] {
-        var orderedViews = loadedViews
-            .sorted { $0.key < $1.key }
-            .map(\.value)
-
-        if readingProgression == .rtl {
-            orderedViews.reverse()
-        }
-
-        return orderedViews
-    }
+    /// Use logical reading-order direction for vertical chapter transitions.
+    /// The internal horizontal pager and native WebViews retain their geometry.
+    var animatesChapterTransitionsVertically = false
 
     private let scrollView = UIScrollView()
 
@@ -344,7 +335,10 @@ final class PaginationView: UIView, Loggable {
     private func slideToView(at index: Int, location: PageLocation, animated: Bool) async {
         let fromOffset = scrollView.contentOffset
         let targetOffset = CGPoint(x: xOffsetForIndex(index), y: fromOffset.y)
-        let translationX = fromOffset.x - targetOffset.x
+        let vertical = animatesChapterTransitionsVertically
+        let translation = vertical
+            ? CGPoint(x: 0, y: bounds.height * (index > currentIndex ? -1 : 1))
+            : CGPoint(x: fromOffset.x - targetOffset.x, y: 0)
 
         // We use a snapshot of the current view for two reasons:
         //
@@ -364,6 +358,7 @@ final class PaginationView: UIView, Loggable {
         scrollView.isScrollEnabled = false
 
         defer {
+            currentView?.transform = .identity
             snapshot?.removeFromSuperview()
             isAnimatingContentOffset = false
             scrollView.isScrollEnabled = isScrollEnabled
@@ -371,11 +366,15 @@ final class PaginationView: UIView, Loggable {
 
         setCurrentIndex(index, location: location)
 
-        scrollView.contentOffset = fromOffset
+        scrollView.contentOffset = vertical ? targetOffset : fromOffset
+        if vertical && animated {
+            currentView?.transform = CGAffineTransform(translationX: 0, y: -translation.y)
+        }
 
         if animated {
             await animate(duration: 0.3) {
-                snapshot?.transform = CGAffineTransform(translationX: translationX, y: 0)
+                snapshot?.transform = CGAffineTransform(translationX: translation.x, y: translation.y)
+                self.currentView?.transform = .identity
                 self.scrollView.contentOffset = targetOffset
             }
         } else {
