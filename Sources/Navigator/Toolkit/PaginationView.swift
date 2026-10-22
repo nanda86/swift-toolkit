@@ -346,7 +346,7 @@ final class PaginationView: UIView, Loggable {
         //    `setCurrentIndex()`, but we want to keep it on the screen during
         //    the animation.
         // 2. A workaround for visual glitches, see https://github.com/readium/swift-toolkit/issues/737#issuecomment-4090386881
-        let snapshot = snapshotView(afterScreenUpdates: false)
+        let snapshot = vertical ? opaqueChapterSnapshot() : snapshotView(afterScreenUpdates: false)
         if let snapshot {
             snapshot.frame = bounds
             addSubview(snapshot)
