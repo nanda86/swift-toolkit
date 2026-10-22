@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class PaginationVerticalTransitionTests: XCTestCase {
     func testVerticalTransitionsRetainLogicalChapterOrderAndNativePageSize() async {
-        for progression: ReadingProgression in [.ltr, .rtl] {
+        for progression: ReadiumNavigator.ReadingProgression in [.ltr, .rtl] {
             let delegate = Pages()
             let pagination = PaginationView(frame: CGRect(x: 0, y: 0, width: 390, height: 700),
                 preloadPreviousPositionCount: 2, preloadNextPositionCount: 2, isScrollEnabled: false)
@@ -38,7 +38,7 @@ final class PaginationVerticalTransitionTests: XCTestCase {
 
     private final class Pages: PaginationViewDelegate {
         func paginationView(_ paginationView: PaginationView, pageViewAtIndex index: Int) -> (UIView & PageView)? {
-            Page()
+            MainActor.assumeIsolated { Page() }
         }
         func paginationViewDidUpdateViews(_ paginationView: PaginationView) {}
         func paginationView(_ paginationView: PaginationView, positionCountAtIndex index: Int) -> Int { 1 }

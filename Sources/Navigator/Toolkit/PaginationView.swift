@@ -365,6 +365,9 @@ final class PaginationView: UIView, Loggable {
         }
 
         setCurrentIndex(index, location: location)
+        // Keep the outgoing snapshot until the destination's native WebView is
+        // ready. A short chapter can be pulled before lookahead has finished.
+        if vertical { await loadPagesTask?.value }
 
         scrollView.contentOffset = vertical ? targetOffset : fromOffset
         if vertical && animated {
