@@ -5,7 +5,11 @@
 //
 
 import Foundation
-import UIKit
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
 
 public enum PDFDocumentError: Error {
     /// The provided password was incorrect.
@@ -28,7 +32,7 @@ public protocol PDFDocument {
     func pageCount() async throws -> Int
 
     /// The first page rendered as a cover.
-    func cover() async throws -> UIImage?
+    func cover() async throws -> ReadiumImage?
 
     /// Reading progression set with the "Binding" property in Acrobat.
     func readingProgression() async throws -> ReadingProgression?

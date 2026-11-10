@@ -7,7 +7,9 @@
 import func AVFoundation.AVMakeRect
 import CoreGraphics
 import Foundation
-import UIKit
+
+#if canImport(UIKit)
+    import UIKit
 
 extension UIImage {
     /// Creates a `UIImage` by rendering an SVG document from the given data,
@@ -85,6 +87,79 @@ extension UIImage {
         }
     }
 }
+
+#elseif canImport(AppKit)
+    import AppKit
+
+extension NSImage {
+    /// Creates an `NSImage` by rendering an SVG document from the given data,
+    /// scaled down to fit `maxSize` pixels while preserving the aspect ratio.
+    static func fromSVG(_ data: Data, maxSize: CGSize) -> NSImage? {
+        guard
+            let createFromData = CoreSVG.createFromData,
+            let getCanvasSize = CoreSVG.getCanvasSize,
+            let drawInContext = CoreSVG.drawInContext,
+            let releaseDocument = CoreSVG.releaseDocument,
+            let document = createFromData(data as CFData, nil)
+        else {
+            return nil
+        }
+        let svgDocument = document.takeUnretainedValue()
+        defer { releaseDocument(svgDocument) }
+
+        let canvasSize = getCanvasSize(svgDocument)
+        guard canvasSize.width > 0, canvasSize.height > 0 else {
+            return nil
+        }
+        let renderSize = fittedSize(canvasSize, in: maxSize)
+        guard let context = bitmapContext(size: renderSize) else {
+            return nil
+        }
+        // A bitmap context already has a bottom-left origin, as the SVG renderer expects.
+        context.scaleBy(x: renderSize.width / canvasSize.width, y: renderSize.height / canvasSize.height)
+        drawInContext(context, svgDocument)
+        return context.makeImage().map(NSImage.readium(cgImage:))
+    }
+
+    /// Returns the image scaled down to fit within `maxSize` pixels, preserving
+    /// the aspect ratio without upscaling.
+    func scaleToFit(maxSize: CGSize) -> NSImage {
+        guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return self
+        }
+        let pixelSize = CGSize(width: cgImage.width, height: cgImage.height)
+        let renderSize = Self.fittedSize(pixelSize, in: maxSize)
+        if renderSize == pixelSize {
+            return .readium(cgImage: cgImage)
+        }
+        guard let context = Self.bitmapContext(size: renderSize) else {
+            return self
+        }
+        context.interpolationQuality = .high
+        context.draw(cgImage, in: CGRect(origin: .zero, size: renderSize))
+        return context.makeImage().map(NSImage.readium(cgImage:)) ?? self
+    }
+
+    private static func fittedSize(_ size: CGSize, in maxSize: CGSize) -> CGSize {
+        if size.width <= maxSize.width, size.height <= maxSize.height {
+            return size
+        }
+        return AVMakeRect(aspectRatio: size, insideRect: CGRect(origin: .zero, size: maxSize)).size
+    }
+
+    private static func bitmapContext(size: CGSize) -> CGContext? {
+        CGContext(
+            data: nil,
+            width: max(1, Int(size.width.rounded())),
+            height: max(1, Int(size.height.rounded())),
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )
+    }
+}
+#endif
 
 private enum CoreSVG {
     typealias CreateFromData = @convention(c) (CFData, CFDictionary?) -> Unmanaged<CFTypeRef>?

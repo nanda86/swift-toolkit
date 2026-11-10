@@ -5,7 +5,11 @@
 //
 
 import Foundation
-import UIKit
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
 
 public typealias CoverServiceFactory = (PublicationServiceContext) -> CoverService?
 
@@ -31,13 +35,13 @@ public protocol CoverService: PublicationService {
     /// If the cover is not a bitmap format (e.g. SVG), it will be rendered at
     /// its intrinsic size, or scaled down to a reasonable maximum to avoid
     /// excessive memory usage.
-    func cover() async -> ReadResult<UIImage?>
+    func cover() async -> ReadResult<ReadiumImage?>
 
     /// Returns the publication cover as a bitmap scaled down to fit within
     /// `maxSize` pixels, preserving the aspect ratio without upscaling.
     ///
     /// Pass `pointSize * screenScale` to generate a device-sharp thumbnail.
-    func coverFitting(maxSize: CGSize) async -> ReadResult<UIImage?>
+    func coverFitting(maxSize: CGSize) async -> ReadResult<ReadiumImage?>
 
     /// Returns the raw bytes and media type of the largest publication cover,
     /// if it is available in one of the accepted media types.
@@ -56,7 +60,7 @@ public protocol CoverService: PublicationService {
 }
 
 public extension CoverService {
-    func coverFitting(maxSize: CGSize) async -> ReadResult<UIImage?> {
+    func coverFitting(maxSize: CGSize) async -> ReadResult<ReadiumImage?> {
         await cover().map { $0?.scaleToFit(maxSize: maxSize) }
     }
 
@@ -74,7 +78,7 @@ public extension Publication {
     /// If the cover is not a bitmap format (e.g. SVG), it will be rendered at
     /// its intrinsic size, or scaled down to a reasonable maximum to avoid
     /// excessive memory usage.
-    func cover() async -> ReadResult<UIImage?> {
+    func cover() async -> ReadResult<ReadiumImage?> {
         guard let service = findService(CoverService.self) else {
             return .success(nil)
         }
@@ -85,7 +89,7 @@ public extension Publication {
     /// `maxSize` pixels, preserving the aspect ratio without upscaling.
     ///
     /// Pass `pointSize * screenScale` to generate a device-sharp thumbnail.
-    func coverFitting(maxSize: CGSize) async -> ReadResult<UIImage?> {
+    func coverFitting(maxSize: CGSize) async -> ReadResult<ReadiumImage?> {
         guard let service = findService(CoverService.self) else {
             return .success(nil)
         }
