@@ -5,7 +5,11 @@
 //
 
 import Foundation
-import UIKit
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
 
 /// An HTTP client performs HTTP requests.
 ///
@@ -84,10 +88,10 @@ public extension HTTPClient {
         }
     }
 
-    /// Fetches the resource as an `UIImage`.
-    func fetchImage(_ request: HTTPRequestConvertible) async -> HTTPResult<UIImage> {
+    /// Fetches the resource as an `ReadiumImage`.
+    func fetchImage(_ request: HTTPRequestConvertible) async -> HTTPResult<ReadiumImage> {
         await fetch(request) {
-            UIImage(data: $1)
+            ReadiumImage(data: $1)
         }
     }
 

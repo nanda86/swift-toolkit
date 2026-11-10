@@ -99,8 +99,13 @@ package extension Streamable {
             throw .cancelled
         }
 
-        // `availableMemory` will be 0 on the Simulator.
-        let availableMemory = os_proc_available_memory()
+        // `availableMemory` will be 0 on the Simulator, and macOS has no
+        // per-process memory limit to check.
+        #if os(macOS)
+            let availableMemory = 0
+        #else
+            let availableMemory = os_proc_available_memory()
+        #endif
         if availableMemory > 0, let length = estimated, length > availableMemory {
             throw .outOfMemory(nil)
         }
@@ -126,7 +131,11 @@ package extension Streamable {
                 return
             }
 
-            let availableMemory = os_proc_available_memory()
+            #if os(macOS)
+                let availableMemory = 0
+            #else
+                let availableMemory = os_proc_available_memory()
+            #endif
             guard availableMemory == 0 || data.count + chunk.count <= availableMemory else {
                 error = .outOfMemory(nil)
                 return

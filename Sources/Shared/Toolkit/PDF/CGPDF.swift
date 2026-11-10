@@ -5,7 +5,11 @@
 //
 
 import Foundation
-import UIKit
+#if canImport(UIKit)
+    import UIKit
+#elseif canImport(AppKit)
+    import AppKit
+#endif
 
 /// Extends Core Graphics's `CGPDFDocument` to conform to `PDFDocument`.
 ///
@@ -73,7 +77,7 @@ extension CGPDFDocument: PDFDocument {
         stringList(forKey: "Keywords", in: info)
     }
 
-    public func cover() async throws -> UIImage? {
+    public func cover() async throws -> ReadiumImage? {
         guard let page = page(at: 1) else {
             return nil
         }
@@ -99,7 +103,7 @@ extension CGPDFDocument: PDFDocument {
             return nil
         }
 
-        context.setFillColor(UIColor.white.cgColor)
+        context.setFillColor(CGColor(gray: 1, alpha: 1))
         context.fill(context.boundingBoxOfClipPath)
 
         context.translateBy(
@@ -117,7 +121,7 @@ extension CGPDFDocument: PDFDocument {
         guard let cgImage = context.makeImage() else {
             return nil
         }
-        return UIImage(cgImage: cgImage)
+        return .readium(cgImage: cgImage)
     }
 
     public func tableOfContents() async throws -> [PDFOutlineNode] {
@@ -312,7 +316,7 @@ public class CGPDFDocumentFactory: PDFDocumentFactory, Loggable {
 
         guard
             let provider = CGDataProvider(sequentialInfo: contextRef, callbacks: &callbacks),
-            let document = UIKit.CGPDFDocument(provider)
+            let document = CoreGraphics.CGPDFDocument(provider)
         else {
             throw PDFDocumentError.openFailed
         }

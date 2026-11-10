@@ -4,6 +4,8 @@
 //  available in the top-level LICENSE file of the project.
 //
 
+#if os(iOS)
+
 import AVFoundation
 import Foundation
 import UIKit
@@ -257,3 +259,5 @@ public final class AudioSession: AudioSessionManaging, Loggable {
         }
     }
 }
+
+#endif

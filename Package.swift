@@ -10,7 +10,7 @@ import PackageDescription
 let package = Package(
     name: "Readium",
     defaultLocalization: "en",
-    platforms: [.iOS("15.0")],
+    platforms: [.iOS("15.0"), .macOS("14.0")],
     products: [
         .library(name: "ReadiumShared", targets: ["ReadiumShared"]),
         .library(name: "ReadiumStreamer", targets: ["ReadiumStreamer"]),
@@ -49,7 +49,8 @@ let package = Package(
             ],
             linkerSettings: [
                 .linkedFramework("CoreServices"),
-                .linkedFramework("UIKit"),
+                .linkedFramework("UIKit", .when(platforms: [.iOS])),
+                .linkedFramework("AppKit", .when(platforms: [.macOS])),
             ]
         ),
         .testTarget(

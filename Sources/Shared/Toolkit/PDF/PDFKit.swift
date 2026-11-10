@@ -34,7 +34,7 @@ extension PDFKit.PDFDocument: PDFDocument {
         try await documentRef?.identifier()
     }
 
-    public func cover() async throws -> UIImage? {
+    public func cover() async throws -> ReadiumImage? {
         try await documentRef?.cover()
     }
 
