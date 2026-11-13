@@ -653,8 +653,22 @@ open class EPUBNavigatorViewController: InputObservableViewController,
 
     // MARK: - Navigator
 
+    /// Whether the user can swipe between resources with the pagination
+    /// view's own pan gesture.
+    ///
+    /// Disable it when the app draws its own page turns, such as a page curl.
+    /// Setting `UIScrollView.isScrollEnabled` also re-enables the scroll view's
+    /// pan gesture, so the navigator's page slides and settings updates would
+    /// otherwise restore the native swipe underneath the app's gesture.
+    public var isPageSwipeEnabled: Bool = true {
+        didSet {
+            guard isPageSwipeEnabled != oldValue else { return }
+            paginationView?.isScrollEnabled = isPaginationViewScrollingEnabled
+        }
+    }
+
     private var isPaginationViewScrollingEnabled: Bool {
-        !(config.disablePageTurnsWhileScrolling && settings.scroll)
+        isPageSwipeEnabled && !(config.disablePageTurnsWhileScrolling && settings.scroll)
     }
 
     public var presentation: VisualNavigatorPresentation {
