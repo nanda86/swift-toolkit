@@ -260,4 +260,91 @@ public final class AudioSession: AudioSessionManaging, Loggable {
     }
 }
 
+#else
+
+import Foundation
+
+// macOS has no `AVAudioSession`: apps play audio without activating a session,
+// and playback continues while their windows are hidden. These declarations
+// keep the iOS API shape so audio consumers such as `PublicationSpeechSynthesizer`
+// build on macOS, where starting and ending a session does nothing.
+
+/// An user of the `AudioSession`, for example a media player object.
+public protocol AudioSessionUser: AnyObject {
+    /// Audio session configuration to use for this user.
+    var audioConfiguration: AudioSession.Configuration { get }
+
+    /// Called when an audio interruption finishes. Never called on macOS.
+    func play()
+}
+
+public extension AudioSessionUser {
+    var audioConfiguration: AudioSession.Configuration {
+        .init()
+    }
+}
+
+/// Manages the app's audio session for Readium audio consumers.
+public protocol AudioSessionManaging {
+    func start(with user: AudioSessionUser, isPlaying: Bool)
+    func end(for user: AudioSessionUser)
+    func user(_ user: AudioSessionUser, didChangePlaying isPlaying: Bool)
+}
+
+/// The macOS stand-in for the iOS audio session manager. It records nothing
+/// and changes no system state.
+public final class AudioSession: AudioSessionManaging, Sendable {
+    /// Mirrors the iOS configuration so shared code can describe its intent.
+    public struct Configuration: Equatable, Sendable {
+        public struct Category: Equatable, Sendable {
+            public let rawValue: String
+            public static let playback = Category(rawValue: "playback")
+            public static let ambient = Category(rawValue: "ambient")
+        }
+
+        public struct Mode: Equatable, Sendable {
+            public let rawValue: String
+            public static let `default` = Mode(rawValue: "default")
+            public static let spokenAudio = Mode(rawValue: "spokenAudio")
+        }
+
+        public struct RouteSharingPolicy: Equatable, Sendable {
+            public let rawValue: String
+            public static let `default` = RouteSharingPolicy(rawValue: "default")
+            public static let longFormAudio = RouteSharingPolicy(rawValue: "longFormAudio")
+        }
+
+        public struct CategoryOptions: OptionSet, Equatable, Sendable {
+            public let rawValue: UInt
+            public init(rawValue: UInt) { self.rawValue = rawValue }
+        }
+
+        public let category: Category
+        public let mode: Mode
+        public let routeSharingPolicy: RouteSharingPolicy
+        public let options: CategoryOptions
+
+        public init(
+            category: Category = .playback,
+            mode: Mode = .default,
+            routeSharingPolicy: RouteSharingPolicy = .default,
+            options: CategoryOptions = []
+        ) {
+            self.category = category
+            self.mode = mode
+            self.routeSharingPolicy = routeSharingPolicy
+            self.options = options
+        }
+    }
+
+    /// Shared `AudioSession` for this app.
+    public static let shared = AudioSession()
+
+    private init() {}
+
+    public func start(with user: AudioSessionUser, isPlaying: Bool) {}
+    public func end(for user: AudioSessionUser) {}
+    public func user(_ user: AudioSessionUser, didChangePlaying isPlaying: Bool) {}
+}
+
 #endif

@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -22,3 +24,5 @@ import Foundation
     /// will not be forwarded to other observers.
     func didReceive(_ event: KeyEvent) async -> Bool
 }
+
+#endif

@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -186,3 +188,5 @@ public enum CSSStandardFontWeight: Int, Codable {
     case extraBold = 800
     case black = 900
 }
+
+#endif

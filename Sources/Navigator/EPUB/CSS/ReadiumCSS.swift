@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -197,3 +199,5 @@ private let dirRegex = try! NSRegularExpression(
     pattern: "(<(?:html|body)[^>]*)\\s+dir=[\"']\\w*[\"']",
     options: [.caseInsensitive, .anchorsMatchLines]
 )
+
+#endif

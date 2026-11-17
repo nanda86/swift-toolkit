@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -56,3 +58,5 @@ public struct KeyModifiers: OptionSet, Equatable, CustomStringConvertible {
         keys.map(\.description).joined(separator: "+")
     }
 }
+
+#endif

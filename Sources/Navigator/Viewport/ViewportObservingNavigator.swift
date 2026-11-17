@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -81,3 +83,5 @@ public struct NavigatorViewport: Equatable {
         Dictionary(resources.map { ($0.href, $0.progression) }, uniquingKeysWith: { $1 })
     }
 }
+
+#endif
