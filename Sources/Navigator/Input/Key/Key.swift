@@ -1,3 +1,5 @@
+#if canImport(UIKit) // whole file: UIKit-only, skipped on macOS
+
 //
 //  Copyright 2026 Readium Foundation. All rights reserved.
 //  Use of this source code is governed by the BSD-style license
@@ -119,3 +121,5 @@ public enum Key: Equatable, CustomStringConvertible {
     public static let eight: Key = .character("8")
     public static let nine: Key = .character("9")
 }
+
+#endif
